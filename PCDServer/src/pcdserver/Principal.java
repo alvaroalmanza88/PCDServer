@@ -5,11 +5,17 @@
  */
 package pcdserver;
 
+import java.io.*;
+import java.net.*;
+import java.lang.*;
+
 /**
  *
  * @author Usuario
  */
-public class Principal extends javax.swing.JFrame {
+public class Principal extends javax.swing.JFrame {    
+    
+    private int puerto=0;
 
     /**
      * Creates new form Principal
@@ -64,6 +70,11 @@ public class Principal extends javax.swing.JFrame {
 
         bt_escuchar.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         bt_escuchar.setText("ESCUCHAR");
+        bt_escuchar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                bt_escucharMouseClicked(evt);
+            }
+        });
         bt_escuchar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bt_escucharActionPerformed(evt);
@@ -131,6 +142,23 @@ public class Principal extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_bt_escucharActionPerformed
 
+    private void bt_escucharMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bt_escucharMouseClicked
+        
+        try{
+            puerto = Integer.parseInt(fi_puerto.getText());
+            if (1024 <= puerto && 65535 >= puerto){
+                Escucha escucha = new Escucha(puerto); 
+                escucha.start();
+            }else{
+                throw new NumberFormatException();
+            }
+        }        
+        catch (NumberFormatException e){
+            tx_area_texto.setText("Debe introducir un puerto correcto entre el "
+                    + "1024 y el 65535");
+        }        
+    }//GEN-LAST:event_bt_escucharMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -164,6 +192,72 @@ public class Principal extends javax.swing.JFrame {
                 new Principal().setVisible(true);
             }
         });
+    }
+    public class Escucha extends Thread{
+        private ServerSocket yo;
+        private int puerto;
+        private Socket cliente;
+        private int id = 0;
+        
+        public Escucha(int puerto){
+            this.puerto = puerto;
+        }
+        
+        public void run(){
+            try{
+                this.yo = new ServerSocket (this.puerto);
+                lb_icono_estado.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pcdserver/on.png")));
+                lb_icono_estado.setText("ON ");
+                fi_puerto.setEnabled(false);
+                lb_puerto.setEnabled(false);
+                bt_escuchar.setEnabled(false);
+                while (true) {
+                    this.cliente = yo.accept();
+                    Conexion conexion = new Conexion(this.cliente);
+                    conexion.start(); 
+                }
+            }catch (IOException e){
+                tx_area_texto.setText("Hubo un error al iniciar el servidor: "+ e);
+            }
+            
+        }
+    }
+   
+    public class Conexion extends Thread {
+        private Socket cliente = null;
+        private int ack = 5;
+        private BufferedReader entrada = null;
+        private PrintWriter salida = null;
+
+        public Conexion (Socket cliente) {
+            this.cliente = cliente;
+        }
+        
+        public void run() {
+            try {
+                this.salida = new PrintWriter(cliente.getOutputStream(), true);
+                this.entrada = new BufferedReader(
+                    new InputStreamReader(
+                        cliente.getInputStream()));
+                
+                String mensaje;
+                String ip = cliente.getInetAddress().toString();
+                
+                while ((mensaje = entrada.readLine()) != null) {
+                    salida.print(ack);
+                    if (entrada.equals(String.valueOf(ack)))
+                        break;
+                    
+                    tx_area_texto.setText(tx_area_texto.getText()+'\n'+
+                            ip+ ": " + mensaje);
+                }
+                entrada.close();
+                salida.close();
+                cliente.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
