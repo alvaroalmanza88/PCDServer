@@ -8,6 +8,8 @@ package pcdserver;
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -22,6 +24,14 @@ public class Principal extends javax.swing.JFrame {
      */
     public Principal() {
         initComponents();
+        String address = "";
+        try {
+            address = InetAddress.getLocalHost().getHostAddress().toString();
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      etiqmiIp.setText(address);
+        
     }
 
     /**
@@ -41,6 +51,8 @@ public class Principal extends javax.swing.JFrame {
         bt_escuchar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tx_area_texto = new javax.swing.JTextPane();
+        jLabel1 = new javax.swing.JLabel();
+        etiqmiIp = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PCDServer");
@@ -86,6 +98,8 @@ public class Principal extends javax.swing.JFrame {
         tx_area_texto.setPreferredSize(new java.awt.Dimension(320, 320));
         jScrollPane1.setViewportView(tx_area_texto);
 
+        jLabel1.setText("MiIp");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -94,20 +108,25 @@ public class Principal extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(50, 50, 50)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lb_puerto)
-                                .addGap(4, 4, 4)
-                                .addComponent(fi_puerto, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(100, 100, 100)
-                                .addComponent(lb_estado)
-                                .addGap(10, 10, 10)
-                                .addComponent(lb_icono_estado))))
+                        .addComponent(lb_puerto)
+                        .addGap(4, 4, 4)
+                        .addComponent(fi_puerto, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(100, 100, 100)
+                        .addComponent(lb_estado)
+                        .addGap(10, 10, 10)
+                        .addComponent(lb_icono_estado))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(164, 164, 164)
-                        .addComponent(bt_escuchar)))
-                .addGap(50, 50, 50))
+                        .addComponent(bt_escuchar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 364, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(70, 70, 70)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(etiqmiIp)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,11 +143,15 @@ public class Principal extends javax.swing.JFrame {
                         .addGap(13, 13, 13)
                         .addComponent(lb_estado))
                     .addComponent(lb_icono_estado))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 45, Short.MAX_VALUE)
                 .addComponent(bt_escuchar)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(etiqmiIp))
+                .addGap(86, 86, 86))
         );
 
         pack();
@@ -262,8 +285,10 @@ public class Principal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bt_escuchar;
+    private javax.swing.JLabel etiqmiIp;
     private javax.swing.JTextField fi_puerto;
     private javax.swing.JFileChooser jFileChooser1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lb_estado;
     private javax.swing.JLabel lb_icono_estado;
