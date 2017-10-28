@@ -8,6 +8,7 @@ package pcdserver;
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,7 +25,7 @@ public class Principal extends javax.swing.JFrame {
      */
     public Principal() {
         initComponents();
-        System.out.println(getMyIp());
+        lb_mi_ip.setText(getMyIp());
     }
 
     /**
@@ -36,7 +37,6 @@ public class Principal extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jFileChooser1 = new javax.swing.JFileChooser();
         lb_puerto = new javax.swing.JLabel();
         fi_puerto = new javax.swing.JTextField();
         lb_estado = new javax.swing.JLabel();
@@ -44,6 +44,8 @@ public class Principal extends javax.swing.JFrame {
         bt_escuchar = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tx_area_texto = new javax.swing.JTextPane();
+        jLabel1 = new javax.swing.JLabel();
+        lb_mi_ip = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("PCDServer");
@@ -89,6 +91,9 @@ public class Principal extends javax.swing.JFrame {
         tx_area_texto.setPreferredSize(new java.awt.Dimension(320, 320));
         jScrollPane1.setViewportView(tx_area_texto);
 
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel1.setText("Mi IP:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -97,20 +102,25 @@ public class Principal extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(50, 50, 50)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jScrollPane1)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(lb_puerto)
-                                .addGap(4, 4, 4)
-                                .addComponent(fi_puerto, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(100, 100, 100)
-                                .addComponent(lb_estado)
-                                .addGap(10, 10, 10)
-                                .addComponent(lb_icono_estado))))
+                        .addComponent(lb_puerto)
+                        .addGap(4, 4, 4)
+                        .addComponent(fi_puerto, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(100, 100, 100)
+                        .addComponent(lb_estado)
+                        .addGap(10, 10, 10)
+                        .addComponent(lb_icono_estado))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(164, 164, 164)
-                        .addComponent(bt_escuchar)))
-                .addGap(50, 50, 50))
+                        .addComponent(bt_escuchar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(50, 50, 50)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 364, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lb_mi_ip, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(135, 135, 135))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -127,11 +137,15 @@ public class Principal extends javax.swing.JFrame {
                         .addGap(13, 13, 13)
                         .addComponent(lb_estado))
                     .addComponent(lb_icono_estado))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 44, Short.MAX_VALUE)
                 .addComponent(bt_escuchar)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(22, 22, 22))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(lb_mi_ip, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(86, 86, 86))
         );
 
         pack();
@@ -246,16 +260,21 @@ public class Principal extends javax.swing.JFrame {
                 
                 String mensaje = "No hay mensaje";
                 String ip = cliente.getInetAddress().toString().substring(1);
-                
-                while ((mensaje = entrada.readLine()) != null) {
-                    salida.write(ack);
+                tx_area_texto.setText(ip);
+                while ((mensaje = entrada.readLine()) != null) {                    
                     System.out.println(mensaje);
-                    if (mensaje.equals(String.valueOf(ack)))
+                    if (mensaje.equals(ack))
                         break;
                     
                     tx_area_texto.setText(tx_area_texto.getText()+'\n'+
                             ip+ ": " + mensaje);
-                    
+                    // para ir al final
+                    tx_area_texto.setCaretPosition(tx_area_texto.getDocument()
+                            .getLength());
+                    java.util.Date date = new java.util.Date();
+                     tx_area_texto.setText(tx_area_texto.getText()+'\n'+
+                             Calendar.getInstance().get(Calendar.MILLISECOND));
+                    //salida.write(ack);
                 }
                 salida.write(ack);
                 cliente.close();
@@ -281,10 +300,11 @@ public class Principal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bt_escuchar;
     private javax.swing.JTextField fi_puerto;
-    private javax.swing.JFileChooser jFileChooser1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lb_estado;
     private javax.swing.JLabel lb_icono_estado;
+    private javax.swing.JLabel lb_mi_ip;
     private javax.swing.JLabel lb_puerto;
     private javax.swing.JTextPane tx_area_texto;
     // End of variables declaration//GEN-END:variables
