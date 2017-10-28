@@ -8,6 +8,8 @@ package pcdserver;
 import java.io.*;
 import java.net.*;
 import java.lang.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -22,6 +24,7 @@ public class Principal extends javax.swing.JFrame {
      */
     public Principal() {
         initComponents();
+        System.out.println(getMyIp());
     }
 
     /**
@@ -211,6 +214,7 @@ public class Principal extends javax.swing.JFrame {
                 fi_puerto.setEnabled(false);
                 lb_puerto.setEnabled(false);
                 bt_escuchar.setEnabled(false);
+                tx_area_texto.setText("");
                 while (true) {
                     this.cliente = yo.accept();
                     Conexion conexion = new Conexion(this.cliente);
@@ -225,9 +229,9 @@ public class Principal extends javax.swing.JFrame {
    
     public class Conexion extends Thread {
         private Socket cliente = null;
-        private int ack = 5;
+        private byte ack = 0x05;
         private BufferedReader entrada = null;
-        private PrintWriter salida = null;
+        private DataOutputStream salida = null;
 
         public Conexion (Socket cliente) {
             this.cliente = cliente;
@@ -235,29 +239,43 @@ public class Principal extends javax.swing.JFrame {
         
         public void run() {
             try {
-                this.salida = new PrintWriter(cliente.getOutputStream(), true);
+                this.salida = new DataOutputStream(cliente.getOutputStream());
                 this.entrada = new BufferedReader(
                     new InputStreamReader(
                         cliente.getInputStream()));
                 
-                String mensaje;
-                String ip = cliente.getInetAddress().toString();
+                String mensaje = "No hay mensaje";
+                String ip = cliente.getInetAddress().toString().substring(1);
                 
                 while ((mensaje = entrada.readLine()) != null) {
-                    salida.print(ack);
-                    if (entrada.equals(String.valueOf(ack)))
+                    salida.write(ack);
+                    System.out.println(mensaje);
+                    if (mensaje.equals(String.valueOf(ack)))
                         break;
                     
                     tx_area_texto.setText(tx_area_texto.getText()+'\n'+
                             ip+ ": " + mensaje);
+                    
                 }
-                entrada.close();
-                salida.close();
+                salida.write(ack);
                 cliente.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
+    
+    public String getMyIp(){
+        String ip = "";
+        try {
+            URL whatismyip = new URL("http://checkip.amazonaws.com");
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    whatismyip.openStream()));            
+            ip = in.readLine();
+        } catch (Exception ex) {
+            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return ip;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
