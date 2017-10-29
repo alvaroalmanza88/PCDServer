@@ -258,28 +258,39 @@ public class Principal extends javax.swing.JFrame {
                     new InputStreamReader(
                         cliente.getInputStream()));
                 
-                String mensaje = "No hay mensaje";
+                String mensaje = "";
                 String ip = cliente.getInetAddress().toString().substring(1);
-                tx_area_texto.setText(ip);
-                while ((mensaje = entrada.readLine()) != null) {                    
-                    System.out.println(mensaje);
-                    if (mensaje.equals(ack))
-                        break;
-                    
-                    tx_area_texto.setText(tx_area_texto.getText()+'\n'+
-                            ip+ ": " + mensaje);
-                    // para ir al final
-                    tx_area_texto.setCaretPosition(tx_area_texto.getDocument()
-                            .getLength());
-                    java.util.Date date = new java.util.Date();
-                     tx_area_texto.setText(tx_area_texto.getText()+'\n'+
-                             Calendar.getInstance().get(Calendar.MILLISECOND));
-                    //salida.write(ack);
+                int caracter = 65533;
+                while (!entrada.ready()){}
+                while ((caracter = entrada.read()) != 65533
+                        && (caracter = entrada.read()) != -1){
+                    mensaje += (char)caracter;
                 }
-                salida.write(ack);
+                while (mensaje != null) {
+                    
+                    if (mensaje.equals((char)ack))
+                        break;
+                    if (!(mensaje == "" && caracter == 65533)){                        
+                        tx_area_texto.setText(tx_area_texto.getText()+
+                                ip+ ": " + mensaje);
+                        // para ir al final
+                        tx_area_texto.setCaretPosition(tx_area_texto.getDocument()
+                                .getLength());
+                    }
+                    salida.writeChar((char)ack);
+                    
+                    mensaje = "\n";
+                    while (!entrada.ready()) {}
+                    while ((caracter = entrada.read()) != 65533
+                        && (caracter = entrada.read()) != -1){
+                        mensaje += (char)caracter;
+                    }
+                }
+                //System.out.println("mensaje: " + mensaje);
+                //salida.writeChar((char)ack);
                 cliente.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Error: "+e);
             }
         }
     }
