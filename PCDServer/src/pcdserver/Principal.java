@@ -231,6 +231,7 @@ public class Principal extends javax.swing.JFrame {
                 tx_area_texto.setText("");
                 while (true) {
                     this.cliente = yo.accept();
+                    //System.out.println("conecta");
                     Conexion conexion = new Conexion(this.cliente);
                     conexion.start(); 
                 }
@@ -259,32 +260,41 @@ public class Principal extends javax.swing.JFrame {
                         cliente.getInputStream()));
                 
                 String mensaje = "";
+                String intro = "";
                 String ip = cliente.getInetAddress().toString().substring(1);
                 int caracter = 65533;
-                while (!entrada.ready()){}
+                while (!entrada.ready()){
+                    System.out.println(entrada.ready());
+                }
                 while ((caracter = entrada.read()) != 65533
                         && (caracter = entrada.read()) != -1){
                     mensaje += (char)caracter;
+                    System.out.println(mensaje);
                 }
+                //System.out.println("mensaje: "+mensaje+"...Caracter: "+caracter);
                 while (mensaje != null) {
                     
                     if (mensaje.equals((char)ack))
                         break;
-                    if (!(mensaje == "" && caracter == 65533)){                        
+                    if (!((mensaje == "" || mensaje == "\n") && 
+                            (caracter == 65533 || caracter == -1))){                        
                         tx_area_texto.setText(tx_area_texto.getText()+
-                                ip+ ": " + mensaje);
+                                intro+ip+ ": " + mensaje);
                         // para ir al final
                         tx_area_texto.setCaretPosition(tx_area_texto.getDocument()
                                 .getLength());
+                        intro = "\n";
                     }
                     salida.writeChar((char)ack);
                     
-                    mensaje = "\n";
+                    mensaje = "";
                     while (!entrada.ready()) {}
                     while ((caracter = entrada.read()) != 65533
                         && (caracter = entrada.read()) != -1){
                         mensaje += (char)caracter;
                     }
+                    
+                    //System.out.println("mensaje: "+mensaje+"...Caracter: "+caracter);
                 }
                 //System.out.println("mensaje: " + mensaje);
                 //salida.writeChar((char)ack);
