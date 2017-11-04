@@ -282,21 +282,24 @@ public class Principal extends javax.swing.JFrame {
                 while (!entrada.ready()){}
                 
                 // Mientras no lea un caracter -1 va creando el mensaje que recibe
-                while ((caracter = entrada.read()) != 65533
-                        && (caracter = entrada.read()) != -1){
-                    mensaje += (char)caracter;
-                    System.out.println(mensaje);
+                caracter = entrada.read();
+                while (caracter != 65533
+                        && caracter != 255
+                        && caracter != -1){
+                    mensaje += Character.toString((char)caracter);
+                    caracter = entrada.read();
                 }
-                
                 while (mensaje != null) {
                     
                     // Si el mensaje que recibe es el ACK se finaliza la conexión
-                    if (mensaje.equals((char)ack))
+                    
+                    if (mensaje.equals(Character.toString((char)ack)))
                         break;
+                    
                     // Mientras no nos llegue el mensaje vacio lo vamos añadiendo
                     // al area de texto
                     if (!((mensaje == "" || mensaje == "\n") && 
-                            (caracter == 65533 || caracter == -1))){
+                            (caracter == 65533 || caracter == -1 || caracter == 255))){
                         // Añadimos al texto que ya tenemos una nueva línea, la 
                         // IP del cliente y el nuevo mensaje.
                         tx_area_texto.setText(tx_area_texto.getText()+
@@ -307,17 +310,24 @@ public class Principal extends javax.swing.JFrame {
                                 .getLength());
                         intro = "\n";
                     }
+                    
                     // Una vez recibido el mensaje mandamos el ACK al cliente
-                    salida.writeChar((char)ack);
+                    salida.write(ack);
+                    
                     
                     // Vaciamos el mensaje y volvemos a leer el siguiente mensaje
                     // de este cliente.
                     mensaje = "";
                     while (!entrada.ready()) {}
-                    while ((caracter = entrada.read()) != 65533
-                        && (caracter = entrada.read()) != -1){
-                        mensaje += (char)caracter;
+                    
+                    caracter = entrada.read();
+                    while (caracter != 65533
+                            && caracter != 255
+                            && caracter != -1){
+                        mensaje += Character.toString((char)caracter);
+                        caracter = entrada.read();
                     }
+                    
                 }
                 // Cuando finalizamos la comunicación con el cliente cerramos la
                 // conexión y los buffers. Finalizando ya este hilo.
