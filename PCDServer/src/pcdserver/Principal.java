@@ -1,7 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @author Álvaro Camilo Almanza Báez, David Encinas de Frutos, José Miguel Olivares Gil, José Manuel Serrano Ojeda
+ * @version 1.0.0
  */
 package pcdserver;
 
@@ -13,15 +12,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Usuario
+ * Clase de iniciación de la interfaz del cliente 
  */
 public class Principal extends javax.swing.JFrame {    
     
     private int puerto=0;
 
     /**
-     * Creates new form Principal
+     * Llama a la función de iniciar los componentes. También muestra nuestra
+     * IP pública.
      */
     public Principal() {
         initComponents();
@@ -59,11 +58,6 @@ public class Principal extends javax.swing.JFrame {
         lb_puerto.setText("Puerto: ");
 
         fi_puerto.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
-        fi_puerto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fi_puertoActionPerformed(evt);
-            }
-        });
 
         lb_estado.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         lb_estado.setText("Estado:");
@@ -78,11 +72,6 @@ public class Principal extends javax.swing.JFrame {
         bt_escuchar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 bt_escucharMouseClicked(evt);
-            }
-        });
-        bt_escuchar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bt_escucharActionPerformed(evt);
             }
         });
 
@@ -151,14 +140,11 @@ public class Principal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fi_puertoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fi_puertoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_fi_puertoActionPerformed
-
-    private void bt_escucharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bt_escucharActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_bt_escucharActionPerformed
-
+    /**
+     * Este método se lanza al hacer click en el botón Escuchar. Valida el puerto
+     * y en caso de ser correcto llama al hilo de escuchar.
+     * @param evt evento click del ratón
+     */
     private void bt_escucharMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bt_escucharMouseClicked
         
         try{
@@ -177,7 +163,8 @@ public class Principal extends javax.swing.JFrame {
     }//GEN-LAST:event_bt_escucharMouseClicked
 
     /**
-     * @param args the command line arguments
+     * Clase principal que llama al generador de la interfaz.
+     * @param args no se usan
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
@@ -210,28 +197,40 @@ public class Principal extends javax.swing.JFrame {
             }
         });
     }
+    
+    /**
+     * Clase Escucha
+     * Este hilo recibirá el puerto en su instanciación, genera un Server Socket
+     * y se pone a la escucha.
+     */
     public class Escucha extends Thread{
         private ServerSocket yo;
         private int puerto;
         private Socket cliente;
         private int id = 0;
-        
+        /**
+         * Constructor de la clase
+         * @param puerto puerto de escucha
+         */
         public Escucha(int puerto){
             this.puerto = puerto;
         }
         
         public void run(){
             try{
+                // Creación del server socket
                 this.yo = new ServerSocket (this.puerto);
+                // Se cambia la interfaz para indicar que se está escuchando
                 lb_icono_estado.setIcon(new javax.swing.ImageIcon(getClass().getResource("/pcdserver/on.png")));
                 lb_icono_estado.setText("ON ");
                 fi_puerto.setEnabled(false);
                 lb_puerto.setEnabled(false);
                 bt_escuchar.setEnabled(false);
                 tx_area_texto.setText("");
+                // Se pone a la escucha de conexiones y cuando llega una crea
+                // un nuevo hilo con la misma
                 while (true) {
                     this.cliente = yo.accept();
-                    //System.out.println("conecta");
                     Conexion conexion = new Conexion(this.cliente);
                     conexion.start(); 
                 }
@@ -241,19 +240,32 @@ public class Principal extends javax.swing.JFrame {
             
         }
     }
-   
+    /**
+     * Clase Conexión
+     * Crea un hilo que conecta el servidor con algún cliente
+     */
     public class Conexion extends Thread {
         private Socket cliente = null;
         private byte ack = 0x05;
         private BufferedReader entrada = null;
         private DataOutputStream salida = null;
-
+        
+        /**
+         * Constructor de la clase
+         * @param cliente socket del cliente que se conecta
+         */
         public Conexion (Socket cliente) {
             this.cliente = cliente;
         }
         
+        /**
+         * Inicia el hilo de conexión, para ello crea dos bufferes con el cliente,
+         * uno de entrada y uno de salida.
+         * 
+         */
         public void run() {
             try {
+                // Bufferes de comunicación
                 this.salida = new DataOutputStream(cliente.getOutputStream());
                 this.entrada = new BufferedReader(
                     new InputStreamReader(
@@ -261,43 +273,56 @@ public class Principal extends javax.swing.JFrame {
                 
                 String mensaje = "";
                 String intro = "";
+                // IP pública del cliente
                 String ip = cliente.getInetAddress().toString().substring(1);
+                // Caracter -1
                 int caracter = 65533;
-                while (!entrada.ready()){
-                    System.out.println(entrada.ready());
-                }
+                
+                // Espera que el buffer de entrada esté listo
+                while (!entrada.ready()){}
+                
+                // Mientras no lea un caracter -1 va creando el mensaje que recibe
                 while ((caracter = entrada.read()) != 65533
                         && (caracter = entrada.read()) != -1){
                     mensaje += (char)caracter;
                     System.out.println(mensaje);
                 }
-                //System.out.println("mensaje: "+mensaje+"...Caracter: "+caracter);
+                
                 while (mensaje != null) {
                     
+                    // Si el mensaje que recibe es el ACK se finaliza la conexión
                     if (mensaje.equals((char)ack))
                         break;
+                    // Mientras no nos llegue el mensaje vacio lo vamos añadiendo
+                    // al area de texto
                     if (!((mensaje == "" || mensaje == "\n") && 
-                            (caracter == 65533 || caracter == -1))){                        
+                            (caracter == 65533 || caracter == -1))){
+                        // Añadimos al texto que ya tenemos una nueva línea, la 
+                        // IP del cliente y el nuevo mensaje.
                         tx_area_texto.setText(tx_area_texto.getText()+
                                 intro+ip+ ": " + mensaje);
-                        // para ir al final
+                        
+                        // Vamos al final del area de texto
                         tx_area_texto.setCaretPosition(tx_area_texto.getDocument()
                                 .getLength());
                         intro = "\n";
                     }
+                    // Una vez recibido el mensaje mandamos el ACK al cliente
                     salida.writeChar((char)ack);
                     
+                    // Vaciamos el mensaje y volvemos a leer el siguiente mensaje
+                    // de este cliente.
                     mensaje = "";
                     while (!entrada.ready()) {}
                     while ((caracter = entrada.read()) != 65533
                         && (caracter = entrada.read()) != -1){
                         mensaje += (char)caracter;
                     }
-                    
-                    //System.out.println("mensaje: "+mensaje+"...Caracter: "+caracter);
                 }
-                //System.out.println("mensaje: " + mensaje);
-                //salida.writeChar((char)ack);
+                // Cuando finalizamos la comunicación con el cliente cerramos la
+                // conexión y los buffers. Finalizando ya este hilo.
+                entrada.close();
+                salida.close();
                 cliente.close();
             } catch (IOException e) {
                 System.out.println("Error: "+e);
@@ -305,12 +330,17 @@ public class Principal extends javax.swing.JFrame {
         }
     }
     
+    /**
+     * Método para obtener la IP pública
+     * @return String cadena de texto de IP
+     */
     public String getMyIp(){
         String ip = "";
+        // hacemos uso de un web service que devuelve nuestra IP
         try {
-            URL whatismyip = new URL("http://checkip.amazonaws.com");
+            URL cualEsMiIp = new URL("http://checkip.amazonaws.com");
             BufferedReader in = new BufferedReader(new InputStreamReader(
-                    whatismyip.openStream()));            
+                    cualEsMiIp.openStream()));            
             ip = in.readLine();
         } catch (Exception ex) {
             Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
